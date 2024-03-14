@@ -15012,7 +15012,24 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
-<p>Word2Vec: Get a word embedding by fitting a</p>
+<ol>
+<li>Word2Vec: Use neural network to find the embedding vector. Usually can be trained by 2 approach CBOW, skip-gram. </li>
+</ol>
+<ul>
+<li>Advantage: Dense embedding vector compare with TF-IDF embedding. Fast and easy to train.</li>
+<li>Drawback: Static embedding (same word have one embedding vector), not positional encoding, contextless embedding. Therefore this embedding is not suited for transformer model</li>
+</ul>
+<ol>
+<li>Contextual embedding:<ol>
+<li>initialize token embedding: GPT use sub-word tokenizer, and use BPE(Byte pair encoding)</li>
+<li>use positional encoding</li>
+</ol>
+</li>
+</ol>
+<ul>
+<li>Advantage: improve Contextual Understanding. able to handle Polysemy. And can do transfer learning (fine-tuning)</li>
+<li>Disadvantage: require more computational resource. High complexity, train with more resource and time. Overfiting in small dataset.</li>
+</ul>
 
 </div>
 </div>
@@ -15135,7 +15152,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
       <th>1</th>
       <td>0</td>
       <td>disease 2019 covid-19 contagious disease cause...</td>
-      <td>[0.0017776335589587688, -0.04624265804886818, ...</td>
+      <td>[0.001791783724911511, -0.04623255878686905, -...</td>
     </tr>
     <tr>
       <th>2</th>
@@ -15189,7 +15206,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
       <th>848</th>
       <td>2</td>
       <td> contact center disease control prevention cd...</td>
-      <td>[0.03240770101547241, -0.07215110212564468, 0....</td>
+      <td>[0.03313404321670532, -0.07224225997924805, 0....</td>
     </tr>
   </tbody>
 </table>
@@ -15321,9 +15338,9 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
   0.43256507529890653,
   0.42124710667109944,
   0.40625766446236056,
-  0.40165628478809823,
-  0.3947402334076313,
-  0.3946119436922362,
+  0.40167652662332576,
+  0.3946931201132131,
+  0.39443386771876043,
   0.3871106881070624,
   0.3826003101682879,
   0.37979818386412445))</pre>
@@ -15335,6 +15352,18 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 </div>
 
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>The sentences with high cos similarity are considered as relevant in embedding space.</p>
+
+</div>
+</div>
+</div>
 </div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -15367,7 +15396,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     <span class="n">question</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\n\n</span><span class="s2">Question: </span><span class="si">{</span><span class="n">query</span><span class="si">}</span><span class="s2">"</span>
     <span class="n">message</span> <span class="o">=</span> <span class="n">introduction</span>
     
-    <span class="c1"># iterate top_n sentences given by search(), adding sentences to the query</span>
+    <span class="c1"># iterate top_n sentences given by search(), adding sentences to the query if not exceeding the max_token</span>
     <span class="k">for</span> <span class="n">sent</span> <span class="ow">in</span> <span class="n">text</span><span class="p">:</span>
         <span class="n">next_sent</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"</span><span class="se">\n\n</span><span class="s2">Sentences on Wikipedia:</span><span class="se">\n</span><span class="si">{</span><span class="n">sent</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span>
         <span class="k">if</span> <span class="n">num_tokens</span><span class="p">(</span><span class="n">message</span> <span class="o">+</span> <span class="n">next_sent</span> <span class="o">+</span> <span class="n">question</span><span class="p">,</span><span class="n">model</span><span class="o">=</span><span class="n">MODEL</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">max_token</span><span class="p">:</span>
@@ -15421,6 +15450,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
             <span class="s2">"How long does it take to recover from COVID 19?"</span><span class="p">,</span>
             <span class="s2">"What did the first vaccine for COVID-19 come out?"</span><span class="p">,</span>
             <span class="s2">"Which company made the first vaccine?"</span><span class="p">,</span>
+            <span class="s2">"Which company made the first vaccine for COVID19?"</span><span class="p">,</span>
             <span class="s2">"How many people around the world are infected with COVID 19"</span><span class="p">,</span>
             <span class="s2">"Where do COVID-19 come from?"</span><span class="p">,</span>
             <span class="s2">"What is the fatality rate of COVID 19"</span><span class="p">,</span>
@@ -15446,11 +15476,15 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
         <span class="n">MODEL</span><span class="o">=</span> <span class="s2">"gpt-3.5-turbo"</span><span class="p">,</span>
         <span class="n">token_budget</span> <span class="o">=</span> <span class="mi">2000</span><span class="p">,</span>
         <span class="n">print_message</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        
+<span class="w">        </span><span class="sd">''' construct query by search relevant content and pass to GPT model.</span>
+<span class="sd">        return GPT's response</span>
+<span class="sd">        '''</span>
+        <span class="c1"># get the query with content</span>
         <span class="n">query_with_content</span> <span class="o">=</span> <span class="n">construct_query</span><span class="p">(</span><span class="n">query</span><span class="p">,</span><span class="n">df</span><span class="p">,</span><span class="mi">2000</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">print_message</span><span class="p">:</span>
                 <span class="nb">print</span><span class="p">(</span><span class="n">query_with_content</span><span class="p">)</span>
         
+        <span class="c1"># construct messages for GPT model and receive response.</span>
         <span class="n">messages</span> <span class="o">=</span> <span class="p">[</span>
                 <span class="p">{</span><span class="s1">'role'</span><span class="p">:</span><span class="s1">'system'</span><span class="p">,</span><span class="s1">'content'</span><span class="p">:</span><span class="s1">'You answer questions about the COVID-19.'</span><span class="p">},</span>
                 <span class="p">{</span><span class="s2">"role"</span><span class="p">:</span> <span class="s2">"user"</span><span class="p">,</span> <span class="s2">"content"</span><span class="p">:</span> <span class="n">query_with_content</span><span class="p">},</span>
@@ -15461,7 +15495,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
                 <span class="n">temperature</span><span class="o">=</span><span class="mi">0</span>
         <span class="p">)</span>
         <span class="n">response_message</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">choices</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">content</span>
-        <span class="k">return</span> <span class="n">response_message</span>
+        <span class="k">return</span> <span class="n">query_with_content</span><span class="p">,</span> <span class="n">response_message</span>
         
 </pre></div>
 
@@ -15478,7 +15512,14 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">GPT_answer</span> <span class="o">=</span> <span class="p">[</span><span class="n">ask</span><span class="p">(</span><span class="n">question</span><span class="p">)</span> <span class="k">for</span> <span class="n">question</span> <span class="ow">in</span> <span class="n">questions</span><span class="p">]</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">query_content</span> <span class="o">=</span> <span class="p">[]</span>
+<span class="n">GPT_answer</span> <span class="o">=</span> <span class="p">[]</span>
+
+<span class="c1"># put the query_content and GPT's response to the list for troubleshooting</span>
+<span class="k">for</span> <span class="n">question</span> <span class="ow">in</span> <span class="n">questions</span><span class="p">:</span>
+    <span class="n">query</span><span class="p">,</span> <span class="n">answer</span> <span class="o">=</span> <span class="n">ask</span><span class="p">(</span><span class="n">question</span><span class="p">)</span>
+    <span class="n">query_content</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">query</span><span class="p">)</span>
+    <span class="n">GPT_answer</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">answer</span><span class="p">)</span>
 </pre></div>
 
      </div>
@@ -15494,90 +15535,24 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">True_anser</span> <span class="o">=</span><span class="p">[</span><span class="s2">"NA"</span><span class="p">,</span>
-             <span class="s2">"18.2m - 33.5m"</span><span class="p">,</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># manually collecting answer</span>
+<span class="n">True_answer</span> <span class="o">=</span><span class="p">[</span><span class="s2">"Per Our World in Data, 103,436,829 confirmed cases have been reported in the United States with 1,177,223 deaths, the most of any country,"</span><span class="p">,</span>
+             <span class="s2">"estimated 18.2m - 33.5m"</span><span class="p">,</span>
              <span class="s2">"December 2019"</span><span class="p">,</span>
              <span class="s2">"Wuhan, China"</span><span class="p">,</span>
              <span class="s2">"1 week"</span><span class="p">,</span>
-             <span class="s2">"Pri"</span><span class="p">]</span>
+             <span class="s2">"Pfizer tested on NOV,2020 and get approved by England on DEC,2020. Base on the event of timeline. This can be inferred."</span><span class="p">,</span>
+             <span class="s2">"Pfizer. Can be inferred."</span><span class="p">,</span>
+             <span class="s2">"Pfizer. Can be inferred."</span><span class="p">,</span>
+             <span class="s2">"As of 14 April 2022, over 500 million cases were confirmed globally."</span><span class="p">,</span>
+             <span class="s2">"Some evidences shows it come from bats"</span><span class="p">,</span>
+             <span class="s2">"1.02%"</span><span class="p">,</span>
+             <span class="s2">"February 6, 2020."</span><span class="p">]</span>
 </pre></div>
 
      </div>
 </div>
 </div>
-</div>
-
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
-<div class="jp-Cell-inputWrapper">
-<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
-</div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">q</span><span class="p">,</span> <span class="n">a</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">questions</span><span class="p">,</span><span class="n">GPT_answer</span><span class="p">):</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">q</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="n">a</span><span class="o">+</span><span class="s1">'</span><span class="se">\n</span><span class="s1">'</span><span class="p">)</span>
-</pre></div>
-
-     </div>
-</div>
-</div>
-</div>
-
-<div class="jp-Cell-outputWrapper">
-<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
-</div>
-
-
-<div class="jp-OutputArea jp-Cell-outputArea">
-
-<div class="jp-OutputArea-child">
-
-    
-    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
-
-
-<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>How many people died in US cause by COVID-19?
-I could not find an answer.
-
-How many people died in the world cause by COVID-19?
-The estimated number of deaths worldwide caused by COVID-19 ranges from 18.2 to 33.5 million, with an approximate figure of 27.4 million as of November 18, 2023.
-
-When did the first case of COVID-19 found?
-The first case of COVID-19 was found in December 2019 in Wuhan, China.
-
-Where did the first case of COVID-19 found?
-The first case of COVID-19 was found in Wuhan, China in December 2019.
-
-How long does it take to recover from COVID 19?
-mild cases typically recover within a week, while severe or critical cases may take several weeks to recover.
-
-What did the first vaccine for COVID-19 come out?
-The first COVID-19 vaccine came out in December 2020.
-
-Which company made the first vaccine?
-I could not find an answer.
-
-How many people around the world are infected with COVID 19
-I could not find an answer.
-
-Where do COVID-19 come from?
-COVID-19 is believed to have originated from a zoonotic source, likely from wild bats and possibly spread to humans through an intermediary wildlife host.
-
-What is the fatality rate of COVID 19
-The fatality rate of COVID-19 is not explicitly mentioned in the provided information.
-
-When is the first person died in US cause by COVID-19?
-The first person died in the US due to COVID-19 on February 6, 2020.
-
-</pre>
-</div>
-</div>
-
-</div>
-
 </div>
 
 </div>
@@ -15592,6 +15567,27 @@ The first person died in the US due to COVID-19 on February 6, 2020.
 </div>
 </div>
 </div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># put everything in one dataframe</span>
+<span class="n">QandA</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span> <span class="p">{</span><span class="s2">"question"</span><span class="p">:</span> <span class="n">questions</span><span class="p">,</span>
+                            <span class="s2">"query_with_content"</span><span class="p">:</span> <span class="n">query_content</span><span class="p">,</span>
+                            <span class="s2">"Actual_answer"</span><span class="p">:</span> <span class="n">True_answer</span><span class="p">,</span>
+                            <span class="s2">"GPT_answer"</span><span class="p">:</span> <span class="n">GPT_answer</span>
+                            <span class="p">})</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
 </div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
@@ -15600,7 +15596,7 @@ The first person died in the US due to COVID-19 on February 6, 2020.
 <div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">ask</span><span class="p">(</span><span class="s1">'name of the first vaccine cause by COVID19?'</span><span class="p">)</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">QandA</span>
 </pre></div>
 
      </div>
@@ -15622,9 +15618,119 @@ The first person died in the US due to COVID-19 on February 6, 2020.
 
 
 
+<div class="jp-RenderedHTMLCommon jp-RenderedHTML jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/html">
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
 
-<div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&#39;I could not find an answer.&#39;</pre>
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>question</th>
+      <th>query_with_content</th>
+      <th>Actual_answer</th>
+      <th>GPT_answer</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>How many people died in US cause by COVID-19?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>Per Our World in Data, 103,436,829 confirmed c...</td>
+      <td>I could not find an answer.</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>How many people died in the world cause by COV...</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>estimated 18.2m - 33.5m</td>
+      <td>The estimated number of deaths worldwide direc...</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>When did the first case of COVID-19 found?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>December 2019</td>
+      <td>The first case of COVID-19 was found in Decemb...</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Where did the first case of COVID-19 found?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>Wuhan, China</td>
+      <td>The first case of COVID-19 was found in Wuhan,...</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>How long does it take to recover from COVID 19?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>1 week</td>
+      <td>mild cases typically recover within a week, wh...</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>What did the first vaccine for COVID-19 come out?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>Pfizer tested on NOV,2020 and get approved by ...</td>
+      <td>The first COVID-19 vaccine came out in Decembe...</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>Which company made the first vaccine?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>Pfizer. Can be inferred.</td>
+      <td>I could not find an answer.</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>Which company made the first vaccine for COVID19?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>Pfizer. Can be inferred.</td>
+      <td>I could not find an answer.</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>How many people around the world are infected ...</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>As of 14 April 2022, over 500 million cases we...</td>
+      <td>I could not find an answer.</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>Where do COVID-19 come from?</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>Some evidences shows it come from bats</td>
+      <td>COVID-19 is believed to have originated from a...</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>What is the fatality rate of COVID 19</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>1.02%</td>
+      <td>The fatality rate of COVID-19 is typically mea...</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>When is the first person died in US cause by C...</td>
+      <td>Use the below information on the COVID-19 to a...</td>
+      <td>February 6, 2020.</td>
+      <td>The first person died in the US due to COVID-1...</td>
+    </tr>
+  </tbody>
+</table>
+</div>
 </div>
 
 </div>
@@ -15633,6 +15739,218 @@ The first person died in the US due to COVID-19 on February 6, 2020.
 
 </div>
 
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">for</span> <span class="n">q</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">a2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">questions</span><span class="p">,</span><span class="n">GPT_answer</span><span class="p">,</span> <span class="n">True_answer</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Question: </span><span class="si">{</span><span class="n">q</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"GPT_answer: </span><span class="si">{</span><span class="n">a1</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"True_answer: </span><span class="si">{</span><span class="n">a2</span><span class="si">}</span><span class="se">\n</span><span class="s2">"</span><span class="p">)</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Question: How many people died in US cause by COVID-19?
+GPT_answer: I could not find an answer.
+True_answer: Per Our World in Data, 103,436,829 confirmed cases have been reported in the United States with 1,177,223 deaths, the most of any country,
+
+Question: How many people died in the world cause by COVID-19?
+GPT_answer: The estimated number of deaths worldwide directly caused by COVID-19 ranges from 18.2 to 33.5 million, with an approximate figure of 27.4 million as of November 18, 2023.
+True_answer: estimated 18.2m - 33.5m
+
+Question: When did the first case of COVID-19 found?
+GPT_answer: The first case of COVID-19 was found in December 2019.
+True_answer: December 2019
+
+Question: Where did the first case of COVID-19 found?
+GPT_answer: The first case of COVID-19 was found in Wuhan, China in December 2019.
+True_answer: Wuhan, China
+
+Question: How long does it take to recover from COVID 19?
+GPT_answer: mild cases typically recover within a week, while severe or critical cases may take several weeks to recover.
+True_answer: 1 week
+
+Question: What did the first vaccine for COVID-19 come out?
+GPT_answer: The first COVID-19 vaccine came out in December 2020.
+True_answer: Pfizer tested on NOV,2020 and get approved by England on DEC,2020. Base on the event of timeline. This can be inferred.
+
+Question: Which company made the first vaccine?
+GPT_answer: I could not find an answer.
+True_answer: Pfizer. Can be inferred.
+
+Question: Which company made the first vaccine for COVID19?
+GPT_answer: I could not find an answer.
+True_answer: Pfizer. Can be inferred.
+
+Question: How many people around the world are infected with COVID 19
+GPT_answer: I could not find an answer.
+True_answer: As of 14 April 2022, over 500 million cases were confirmed globally.
+
+Question: Where do COVID-19 come from?
+GPT_answer: COVID-19 is believed to have originated from a zoonotic source, likely from wild bats and possibly spread to humans through an intermediary wildlife host.
+True_answer: Some evidences shows it come from bats
+
+Question: What is the fatality rate of COVID 19
+GPT_answer: The fatality rate of COVID-19 is typically measured using metrics such as the Case Fatality Rate (CFR) or the Infection Fatality Rate (IFR). The Case Fatality Rate (CFR) is the ratio of deaths to diagnosed cases over a specific time interval, while the Infection Fatality Rate (IFR) is the ratio of deaths to the total number of infected individuals, including asymptomatic and undiagnosed cases. The fatality rate can vary by region and population demographics. The IFR for COVID-19 has been estimated to range from 0.24 to 1.49 in different studies.
+True_answer: 1.02%
+
+Question: When is the first person died in US cause by COVID-19?
+GPT_answer: The first person died in the US due to COVID-19 on January 9, 2020.
+True_answer: February 6, 2020.
+
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ol>
+<li>GPT cannot find the answer, a sentence mentions 1,177,223 deaths in the United America</li>
+<li>GPT retrieve the info successfully</li>
+<li>Correct</li>
+<li>Correct</li>
+<li>Correct</li>
+<li>Correct</li>
+<li>False</li>
+<li>False</li>
+<li>False</li>
+<li>Correct</li>
+<li>False, GPT summaries how to calculate the fatality rate but doesn't provide the exact number.</li>
+<li>Correct </li>
+</ol>
+
+</div>
+</div>
+</div>
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># use boolean to substitute the answer to calculate the accuracy</span>
+<span class="n">True_answer_encode</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">questions</span><span class="p">)</span>
+<span class="n">GPT_answer_encode</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">True</span><span class="p">,</span><span class="kc">False</span><span class="p">,</span><span class="kc">True</span><span class="p">]</span>
+<span class="n">QandA</span><span class="p">[</span><span class="s1">'True_answer_encode'</span><span class="p">]</span> <span class="o">=</span> <span class="n">True_answer_encode</span>
+<span class="n">QandA</span><span class="p">[</span><span class="s1">'GPT_answer_encode'</span><span class="p">]</span> <span class="o">=</span> <span class="n">GPT_answer_encode</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea">
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
+     <div class="CodeMirror cm-s-jupyter">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">sklearn.metrics</span> <span class="kn">import</span> <span class="n">classification_report</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">classification_report</span><span class="p">(</span><span class="n">QandA</span><span class="p">[</span><span class="s1">'True_answer_encode'</span><span class="p">],</span><span class="n">QandA</span><span class="p">[</span><span class="s1">'GPT_answer_encode'</span><span class="p">]))</span>
+</pre></div>
+
+     </div>
+</div>
+</div>
+</div>
+
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>              precision    recall  f1-score   support
+
+       False       0.00      0.00      0.00         0
+        True       1.00      0.58      0.74        12
+
+    accuracy                           0.58        12
+   macro avg       0.50      0.29      0.37        12
+weighted avg       1.00      0.58      0.74        12
+
+</pre>
+</div>
+</div>
+
+<div class="jp-OutputArea-child">
+
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
+<pre>/Users/weihuapan/anaconda3/lib/python3.11/site-packages/sklearn/metrics/_classification.py:1469: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/Users/weihuapan/anaconda3/lib/python3.11/site-packages/sklearn/metrics/_classification.py:1469: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+/Users/weihuapan/anaconda3/lib/python3.11/site-packages/sklearn/metrics/_classification.py:1469: UndefinedMetricWarning: Recall and F-score are ill-defined and being set to 0.0 in labels with no true samples. Use `zero_division` parameter to control this behavior.
+  _warn_prf(average, modifier, msg_start, len(result))
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<p>The accuracy is 58%. F1 score, precision, and recall is not making sense here since we don't false answer in actual.</p>
+
+</div>
+</div>
+</div>
 </div>
 <div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -15663,27 +15981,46 @@ The first person died in the US due to COVID-19 on February 6, 2020.
 </div>
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<h4>Advantage: </h4><ul>
+<li>You can ask questions that happened after the model is trained.</li>
+<li>The search function can find all the relevant passage from embedding vector space. Therefore, we don't need to provide all the information that introduce noise and reduce the number of tokens.</li>
+<li></li>
+</ul>
+<h4>Disadvantage:</h4><ul>
+<li>lack of ability to infer the answer. For example, the model is able to know when the first vaccine comes out, but it cannot provide the company that made the vaccine.</li>
+<li>It is hard to find out whether GPT use its own knowledge base.</li>
+</ul>
+
+</div>
+</div>
+</div>
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
+<div class="jp-Cell-inputWrapper">
+<div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
+</div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h2 id="Task-5.2:">Task 5.2:<a class="anchor-link" href="#Task-5.2:">&#182;</a></h2><p>Propose improvements or alternative approaches to enhance the system's accuracy or efficiency.</p>
 
 </div>
 </div>
 </div>
-</div><div class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div>
+<div class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
-<div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
-<div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
-     <div class="CodeMirror cm-s-jupyter">
-<div class=" highlight hl-ipython3"><pre><span></span> 
-</pre></div>
+<div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
+</div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
+<ul>
+<li>This can be improved by introduce knowledge graphs to incorporate reasoning.</li>
+<li>I should also provide the content source, so I can quickly find where GPT found the information.</li>
+</ul>
 
-     </div>
 </div>
 </div>
 </div>
-
 </div>
 </body>
 
